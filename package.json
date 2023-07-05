@@ -1,0 +1,11 @@
+{
+  "name": "pce",
+  "version": "1.0.0",
+  "description": "pce.js is a js chess engine",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}
