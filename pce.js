@@ -1,5 +1,7 @@
 const PIECES = []
 
+var selected = -1
+
 const Color = {
 	NONE: -1,
 	WHITE: 0,
@@ -94,8 +96,9 @@ const CheckDest = (piece, dest) => {
 	return [true, undefined]
 }
 
-const CheckMove = (piece, dest) => {
+const CheckMove = (dest) => {
 	const flags = []
+	const piece = PIECES[selected]
 
 	if(!CheckPath(piece, dest)) { return false }
 
@@ -106,6 +109,12 @@ const CheckMove = (piece, dest) => {
 	if(capture_flag === 0) { flags.push(capture_flag) }
 	
 	return Filter(piece.type, flags)(...dest)
+}
+
+const SelectPiece = (piece) => {
+	for(let i = 0; i < PIECES.length; i++) {
+		if(JSON.stringify(piece) === JSON.stringify(PIECES[i])) { selected = i }
+	}
 }
 
 class Piece {
@@ -133,4 +142,5 @@ module.exports = {
 	Filter,
 	Flags,
 	CheckMove,
+	SelectPiece,
 }
