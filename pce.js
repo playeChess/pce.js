@@ -107,6 +107,15 @@ const Filter = (type, flags = []) => {
 			filter.push([1, en_passant_offset])
 		}
 		return AdvancedOptionFilter(BaseFilters[PieceType.PAWN], filter)
+	} else if(type === PieceType.KING) {
+		let filter = []
+		if(HasFlag(flags, Flags.QUEENSIDE_CASTLE)) {
+			filter.push([0, -2])
+		}
+		if(HasFlag(flags, Flags.CASTLE)) {
+			filter.push([0, 2])
+		}
+		return AdvancedOptionFilter(BaseFilters[PieceType.KING], filter)
 	} else { return BaseFilters[type] }
 }
 
@@ -165,6 +174,29 @@ const CheckMove = (dest) => {
 		flags.push(Flags.EN_PASSANT)
 		en_passant_offset = last.from[1] - piece.file
 	}
+
+	const rank = piece.color ? 7 : 0
+	const qrook = GetPiece([rank, 0])
+	const rook = GetPiece([rank, 7])
+	if(
+		qrook &&
+		piece.type === PieceType.KING &&
+		!piece.moved &&
+		qrook.type === PieceType.ROOK &&
+		!qrook.moved &&
+		GetPiece(rank, 1) === undefined &&
+		GetPiece(rank, 2) === undefined &&
+		GetPiece(rank, 3) === undefined
+	) { flags.push(Flags.QUEENSIDE_CASTLE) }
+	else if(
+		rook &&
+		piece.type === PieceType.KING &&
+		!piece.moved &&
+		rook.type === PieceType.ROOK &&
+		!rook.moved &&
+		GetPiece(rank, 5) === undefined &&
+		GetPiece(rank, 6) === undefined
+	) { flags.push(Flags.CASTLE) }
 	
 	if(!piece.moved) { flags.push(Flags.FIRST) }
 
@@ -244,6 +276,12 @@ const Move = (coords) => {
 			TakePiece(coords)
 		} else if(move_check[1].indexOf(Flags.EN_PASSANT) !== -1) {
 			TakePiece([coords[0] - 1, coords[1]])
+		} else if(move_check[1].indexOf(Flags.QUEENSIDE_CASTLE) !== -1) {
+			const i = PIECES[selected].color ? 7 : 0
+			GetPiece([i, 0]).file = 3
+		} else if(move_check[1].indexOf(Flags.CASTLE) !== -1) {
+			const i = PIECES[selected].color ? 7 : 0
+			GetPiece([i, 7]).file = 5
 		}
 		[PIECES[selected].rank, PIECES[selected].file] = coords
 		PIECES[selected].moved = true
