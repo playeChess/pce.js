@@ -179,6 +179,7 @@ const CheckMove = (dest) => {
 	const qrook = GetPiece([rank, 0])
 	const rook = GetPiece([rank, 7])
 	if(
+		JSON.stringify(dest) === JSON.stringify([rank, 2]) &&
 		qrook &&
 		piece.type === PieceType.KING &&
 		!piece.moved &&
@@ -188,7 +189,8 @@ const CheckMove = (dest) => {
 		GetPiece(rank, 2) === undefined &&
 		GetPiece(rank, 3) === undefined
 	) { flags.push(Flags.QUEENSIDE_CASTLE) }
-	else if(
+	if(
+		JSON.stringify(dest) === JSON.stringify([rank, 6]) &&
 		rook &&
 		piece.type === PieceType.KING &&
 		!piece.moved &&
@@ -278,10 +280,10 @@ const Move = (coords) => {
 			TakePiece([coords[0] - 1, coords[1]])
 		} else if(move_check[1].indexOf(Flags.QUEENSIDE_CASTLE) !== -1) {
 			const i = PIECES[selected].color ? 7 : 0
-			GetPiece([i, 0]).file = 3
+			GetPiece([i, 0]).file += 3
 		} else if(move_check[1].indexOf(Flags.CASTLE) !== -1) {
 			const i = PIECES[selected].color ? 7 : 0
-			GetPiece([i, 7]).file = 5
+			GetPiece([i, 7]).file -= 2
 		}
 		[PIECES[selected].rank, PIECES[selected].file] = coords
 		PIECES[selected].moved = true
