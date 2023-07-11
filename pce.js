@@ -274,6 +274,47 @@ class Piece {
 	toString = () => `${this.color ? 'Black' : 'White'} ${this.type === 0 ? 'pawn' : this.type === 1 ? 'knight' : this.type === 2 ? 'bishop' : this.type === 3 ? 'rook' : this.type === 4 ? 'queen' : 'king'} on ${Notations(this.coords())}`
 }
 
+const ShowBoard = () => {
+	console.log('#-----------------#')
+	for(let i = 7; i >= 0; i--) {
+		let str = '| '
+		for(let j = 0; j < 8; j++) {
+			let type
+			const piece = GetPiece([i, j])
+			if(piece) {
+				switch(piece.type) {
+					case PieceType.PAWN:
+						type = 'p'
+						break
+					case PieceType.KNIGHT:
+						type = 'n'
+						break
+					case PieceType.BISHOP:
+						type = 'b'
+						break
+					case PieceType.ROOK:
+						type = 'r'
+						break
+					case PieceType.QUEEN:
+						type = 'q'
+						break
+					case PieceType.KING:
+						type = 'k'
+						break
+					default:
+						break
+				}
+				if(!piece.color) { type = type.toUpperCase() }
+			} else {
+				type = ' '
+			}
+			str += type + ' '
+		}
+		console.log(str + '|')
+	}
+	console.log('#-----------------#')
+}
+
 module.exports = {
 	GetPieces,
 	Color,
@@ -289,4 +330,5 @@ module.exports = {
 	GetPiece,
 	Coords,
 	Move,
+	ShowBoard,
 }
