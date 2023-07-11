@@ -1,8 +1,11 @@
-var 
-PIECES = []
+var PIECES = []
+
+const GetPieces = () => PIECES
 
 var selected = -1
 var material_eval = 0
+const moves = []
+var en_passant_offset = 0
 
 const Color = {
 	NONE: -1,
@@ -59,6 +62,18 @@ const Flags = {
 	EN_PASSANT: 4,
 }
 
+class MoveObj {
+	piece
+	from
+	to
+
+	constructor(piece = new Piece(Color.NONE, PieceType.NONE, 0, 0), from = [0, 0], to = [0, 0]) {
+		this.piece = JSON.parse(JSON.stringify(piece))
+		this.from = from
+		this.to = to
+	}
+}
+
 const HasFlag = (flags, flag) => flags.indexOf(flag) !== -1
 
 const DefaultFilter = (rank, file) => rank < 8 && rank > -8 && file < 8 && file > -8 && !(rank === 0 && file === 0)
@@ -86,8 +101,10 @@ const Filter = (type, flags = []) => {
 		filter.push([1, 0])
 		if(HasFlag(flags, Flags.FIRST)) {
 			filter.push([2, 0])
-		} else if(HasFlag(flags, Flags.CAPTURE) || HasFlag(flags, Flags.EN_PASSANT)) {
+		} if(HasFlag(flags, Flags.CAPTURE)) {
 			filter = [[1, 1], [1, -1]]
+		} if(HasFlag(flags, Flags.EN_PASSANT)) {
+			filter.push([1, en_passant_offset])
 		}
 		return AdvancedOptionFilter(BaseFilters[PieceType.PAWN], filter)
 	} else { return BaseFilters[type] }
@@ -132,6 +149,22 @@ const CheckMove = (dest) => {
 	const piece = PIECES[selected]
 
 	if(piece.type !== PieceType.KNIGHT && !CheckPath(piece, dest)) { return false }
+
+	const last = moves[moves.length - 1]
+	if(
+		moves.length != 0 &&
+		piece.type === PieceType.PAWN &&
+		last.piece.type === PieceType.PAWN &&
+		Math.abs(last.from[1] - piece.file) === 1 &&
+		last.to[0] === piece.rank &&
+		(
+			(piece.color === Color.WHITE && last.from[0] - 2 === piece.rank) ||
+			(piece.color === Color.BLACK && last.from[0] + 2 === piece.rank)
+		)
+	) {
+		flags.push(Flags.EN_PASSANT)
+		en_passant_offset = last.from[1] - piece.file
+	}
 	
 	if(!piece.moved) { flags.push(Flags.FIRST) }
 
@@ -140,7 +173,7 @@ const CheckMove = (dest) => {
 	if(!dest_auth) { return false }
 
 	if(capture_flag === 0) { flags.push(capture_flag) }
-
+	
 	return [Filter(piece.type, flags)(...piece.color ? BlackConversion(Offset(piece.coords(), dest)) : Offset(piece.coords(), dest)), flags]
 }
 
@@ -199,20 +232,23 @@ const Notations = coords => `${['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'][coords[1
 
 const TakePiece = (coords) => {
 	const select_index = PIECES.indexOf(GetPiece(coords))
-	const select = PIECES[select_index]
-	material_eval += Material[select.type] * select.color ? 1 : -1
-	PIECES = PIECES.filter((_, index) => index !== select_index)
+	material_eval += Material[PIECES[select_index].type] * PIECES[select_index].color ? 1 : -1
+	PIECES = PIECES.filter((_, index) =>  index !== select_index)
 }
 
 const Move = (coords) => {
 	const move_check = CheckMove(coords)
+	const start = PIECES[selected].coords()
 	if(move_check[0]) {
-		if(move_check[1].indexOf(0) !== -1) {
+		if(move_check[1].indexOf(Flags.CAPTURE) !== -1) {
 			TakePiece(coords)
+		} else if(move_check[1].indexOf(Flags.EN_PASSANT) !== -1) {
+			TakePiece([coords[0] - 1, coords[1]])
 		}
 		[PIECES[selected].rank, PIECES[selected].file] = coords
 		PIECES[selected].moved = true
-		console.log(`${PIECES[selected].toString()} (eval: ${material_eval})`)
+		moves.push(new MoveObj(PIECES[selected], start, coords))
+		console.log(`${PIECES[selected].toString()} from ${Notations(start)} (eval: ${material_eval})`)
 	} else {
 		console.log(`ERROR: ${Notations(coords)} is an invalid move`)
 	}
@@ -239,7 +275,7 @@ class Piece {
 }
 
 module.exports = {
-	PIECES,
+	GetPieces,
 	Color,
 	Piece,
 	PieceType,
