@@ -141,9 +141,7 @@ const CheckMove = (dest) => {
 
 	if(capture_flag === 0) { flags.push(capture_flag) }
 
-	const offset = piece.color === Color.BLACK ? BlackConversion(Offset(piece.coords(), dest)) : Offset(piece.coords(), dest)
-
-	return [Filter(piece.type, flags)(...offset), flags]
+	return [Filter(piece.type, flags)(...piece.color ? BlackConversion(Offset(piece.coords(), dest)) : Offset(piece.coords(), dest)), flags]
 }
 
 const SelectPiece = (piece) => {
