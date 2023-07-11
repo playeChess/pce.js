@@ -144,9 +144,9 @@ const CheckMove = (dest) => {
 	return [Filter(piece.type, flags)(...piece.color ? BlackConversion(Offset(piece.coords(), dest)) : Offset(piece.coords(), dest)), flags]
 }
 
-const SelectPiece = (piece) => {
+const SelectPiece = (coords) => {
 	for(let i = 0; i < PIECES.length; i++) {
-		if(JSON.stringify(piece) === JSON.stringify(PIECES[i])) { selected = i }
+		if(JSON.stringify(coords) === JSON.stringify(PIECES[i].coords())) { selected = i }
 	}
 }
 
@@ -198,13 +198,10 @@ const Coords = str =>  [str[1] - 1, ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'].ind
 const Notations = coords => `${['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'][coords[1]]}${coords[0] + 1}`
 
 const TakePiece = (coords) => {
-	let tmp = selected
-	SelectPiece(GetPiece(coords))
-	if(selected < tmp) { tmp-- }
-	const select = PIECES[selected]
+	const select_index = PIECES.indexOf(GetPiece(coords))
+	const select = PIECES[select_index]
 	material_eval += Material[select.type] * select.color ? 1 : -1
-	PIECES = PIECES.slice(0, selected).concat(PIECES.slice(selected + 1, PIECES.length))
-	selected = tmp
+	PIECES = PIECES.filter((_, index) => index !== select_index)
 }
 
 const Move = (coords) => {
@@ -215,7 +212,7 @@ const Move = (coords) => {
 		}
 		[PIECES[selected].rank, PIECES[selected].file] = coords
 		PIECES[selected].moved = true
-		console.log(`Moved to ${Notations(coords)} (eval: ${material_eval})`)
+		console.log(`${PIECES[selected].toString()} (eval: ${material_eval})`)
 	} else {
 		console.log(`ERROR: ${Notations(coords)} is an invalid move`)
 	}
@@ -237,6 +234,8 @@ class Piece {
 	}
 	
 	coords = () => [this.rank, this.file]
+
+	toString = () => `${this.color ? 'Black' : 'White'} ${this.type === 0 ? 'pawn' : this.type === 1 ? 'knight' : this.type === 2 ? 'bishop' : this.type === 3 ? 'rook' : this.type === 4 ? 'queen' : 'king'} on ${Notations(this.coords())}`
 }
 
 module.exports = {

@@ -29,18 +29,11 @@ console.log(CheckMove([Rank[7], File.g])) */
 
 Board()
 
-SelectPiece(GetPiece(Coords('e2')))
+SelectPiece(Coords('e2'))
 Move(Coords('e4'))
 Move(Coords('e5'))
 Move(Coords('e6'))
 Move(Coords('d7'))
 
-console.log(GetPiece(Coords('e8')))
-SelectPiece(GetPiece(Coords('e8')))
+SelectPiece(Coords('e8'))
 Move(Coords('d7'))
-
-/* for(let i = 0; i < 8; i++) {
-	for(let j = 0; j < 8; j++) {
-		console.log(i, j, CheckMove([i, j]))
-	}
-} */
