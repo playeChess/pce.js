@@ -308,6 +308,7 @@ class Piece {
 		this.file = file
 		PIECES.push(this)
 		POSITIONS[Notations(this.coords())] = this
+		if(type === PieceType.KING) { king_pos[color] = this.coords() }
 	}
 	
 	coords = () => [this.rank, this.file]
@@ -362,10 +363,57 @@ const ShowBoard = () => {
 	console.log('#-----------------#')
 }
 
-const KingRays = color => {
-	for(let i = 0; i < 8; i++) {
-
+const AddCoords = (...coords) => {
+	const rt = [0, 0]
+	for(const coord of coords) {
+		rt[0] += coord[0]
+		rt[1] += coord[1]
 	}
+	return rt
+}
+
+const InBounds = coords => coords[0] < 8 && coords[0] >= 0 && coords[1] < 8 && coords[1] >= 0
+
+const Ray = offset => [[offset, offset], [offset, -offset], [-offset, offset], [-offset, -offset], [offset, 0], [0, offset], [-offset, 0], [0, -offset]]
+
+const KingRays = color => {
+	const ray_center = king_pos[color]
+	// B + R
+	const buffer = [[], [], [], [], [], [], [], []]
+	const lines = [[], [], [], [], [], [], [], []]
+	const enemy = [false, false, false, false, false, false, false, false]
+	const out = [false, false, false, false, false, false, false, false]
+	for(let i = 1; i < 8; i++) {
+		const rays = Ray(i)
+		for(let j = 0; j < rays.length; j++) {
+			if(!out[j]) {
+				const coord = AddCoords(ray_center, rays[j])
+				if(!InBounds(coord)) {
+					out[j] = true
+					continue
+				}
+				lines[j].push(Notations(coord))
+				const piece = GetPiece(coord)
+				if(piece) {
+					if(piece.color === color) { buffer[j].push(Notations(coord)) }
+					else {
+						out[j] = true
+						if(piece.type === (j < 4 ? PieceType.BISHOP : PieceType.ROOK) || piece.type === PieceType.QUEEN) {
+							enemy[j] = true
+						}
+					}
+				}
+			}
+		}
+	}
+	// N
+	const res = [[], []]
+	for(const el of buffer) {
+		if(JSON.stringify(el) != JSON.stringify([])) { res[0].push(el) }
+	} for(let i = 0; i < lines.length; i++) {
+		if(enemy[i]) { res[1].push(lines[i]) }
+	}
+	return res
 }
 
 module.exports = {
@@ -385,4 +433,5 @@ module.exports = {
 	Coords,
 	Move,
 	ShowBoard,
+	KingRays,
 }

@@ -14,6 +14,7 @@ const {
 	Coords,
 	Move,
 	ShowBoard,
+	KingRays,
 } = require('./pce.js')
 
 /* console.log(Filter(PieceType.PAWN, [Flags.CAPTURE, Flags.FIRST_PAWN])(2, 0))
@@ -63,6 +64,10 @@ Move(Coords('g1'))
 
 ShowBoard() */
 
-Board()
-ShowBoard()
-console.log(GetPositions())
+new Piece(Color.WHITE, PieceType.KING, ...Coords('d4'))
+new Piece(Color.WHITE, PieceType.PAWN, ...Coords('d5'))
+new Piece(Color.WHITE, PieceType.PAWN, ...Coords('e5'))
+new Piece(Color.BLACK, PieceType.ROOK, ...Coords('d8'))
+new Piece(Color.BLACK, PieceType.BISHOP, ...Coords('h8'))
+
+console.log(JSON.stringify(KingRays(Color.WHITE), null, 4))
