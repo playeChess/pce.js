@@ -51,7 +51,7 @@ Move(Coords('f5'))
 SelectPiece(Coords('e5'))
 Move(Coords('f6')) */
 
-new Piece(Color.WHITE, PieceType.KING, ...Coords('e1'))
+/* new Piece(Color.WHITE, PieceType.KING, ...Coords('e1'))
 new Piece(Color.WHITE, PieceType.ROOK, ...Coords('a1'))
 new Piece(Color.WHITE, PieceType.ROOK, ...Coords('h1'))
 
@@ -60,4 +60,7 @@ ShowBoard()
 SelectPiece(Coords('e1'))
 Move(Coords('g1'))
 
+ShowBoard() */
+
+Board()
 ShowBoard()
