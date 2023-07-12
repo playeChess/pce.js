@@ -1,5 +1,6 @@
 const {
 	GetPieces,
+	GetPositions,
 	Color,
 	Piece,
 	PieceType,
@@ -64,3 +65,4 @@ ShowBoard() */
 
 Board()
 ShowBoard()
+console.log(GetPositions())

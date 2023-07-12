@@ -1,11 +1,15 @@
 var PIECES = []
 
+const POSITIONS = {}
+
 const GetPieces = () => PIECES
+const GetPositions = () => POSITIONS
 
 var selected = -1
 var material_eval = 0
 const moves = []
 var en_passant_offset = 0
+const king_pos = [[0, 4], [7, 4]]
 
 const Color = {
 	NONE: -1,
@@ -132,19 +136,16 @@ const GetPath = (start, dest) => {
 const CheckPath = (piece, dest) => {
 	const path = GetPath(piece.coords(), dest)
 	for(const cell of path) {
-		for(const piece of PIECES) {
-			if(JSON.stringify(cell) === JSON.stringify(piece.coords())) { return false }
-		}
+		if(GetPiece(cell)) { return false }
 	}
 	return true
 }
 
 const CheckDest = (piece, dest) => {
-	for(const piece_ of PIECES) {
-		if(JSON.stringify(dest) === JSON.stringify(piece_.coords())) {
-			if(piece.color === piece_.color) { return [false, undefined] }
-			return [true, Flags.CAPTURE]
-		}
+	const piece_ = GetPiece(dest)
+	if(piece_) {
+		if(piece.color === piece_.color) { return [false, undefined] }
+		return [true, Flags.CAPTURE]
 	}
 	return [true, undefined]
 }
@@ -217,11 +218,7 @@ const SelectPiece = (coords) => {
 	}
 }
 
-const GetPiece = (coords) => {
-	for(const piece of PIECES) {
-		if(JSON.stringify(coords) === JSON.stringify(piece.coords())) { return piece }
-	}
-}
+const GetPiece = coords => POSITIONS[Notations(coords)]
 
 const Board = () => {
 	new Piece(Color.WHITE, PieceType.ROOK, ...Coords('a1'))
@@ -274,6 +271,9 @@ const Move = (coords) => {
 	const move_check = CheckMove(coords)
 	const start = PIECES[selected].coords()
 	if(move_check[0]) {
+		delete POSITIONS[PIECES[selected].coords()]
+		POSITIONS[coords] = PIECES[selected]
+		if(PIECES[selected].type === PieceType.KING) { king_pos[PIECES[selected].color] = coords }
 		if(move_check[1].indexOf(Flags.CAPTURE) !== -1) {
 			TakePiece(coords)
 		} else if(move_check[1].indexOf(Flags.EN_PASSANT) !== -1) {
@@ -307,11 +307,40 @@ class Piece {
 		this.rank = rank
 		this.file = file
 		PIECES.push(this)
+		POSITIONS[Notations(this.coords())] = this
 	}
 	
 	coords = () => [this.rank, this.file]
 
 	toString = () => `${this.color ? 'Black' : 'White'} ${this.type === 0 ? 'pawn' : this.type === 1 ? 'knight' : this.type === 2 ? 'bishop' : this.type === 3 ? 'rook' : this.type === 4 ? 'queen' : 'king'} on ${Notations(this.coords())}`
+}
+
+const PieceRepr = piece => {
+	let type = ''
+	switch(piece.type) {
+		case PieceType.PAWN:
+			type = 'p'
+			break
+		case PieceType.KNIGHT:
+			type = 'n'
+			break
+		case PieceType.BISHOP:
+			type = 'b'
+			break
+		case PieceType.ROOK:
+			type = 'r'
+			break
+		case PieceType.QUEEN:
+			type = 'q'
+			break
+		case PieceType.KING:
+			type = 'k'
+			break
+		default:
+			break
+	}
+	if(!piece.color) { type = type.toUpperCase() }
+	return type
 }
 
 const ShowBoard = () => {
@@ -322,29 +351,7 @@ const ShowBoard = () => {
 			let type
 			const piece = GetPiece([i, j])
 			if(piece) {
-				switch(piece.type) {
-					case PieceType.PAWN:
-						type = 'p'
-						break
-					case PieceType.KNIGHT:
-						type = 'n'
-						break
-					case PieceType.BISHOP:
-						type = 'b'
-						break
-					case PieceType.ROOK:
-						type = 'r'
-						break
-					case PieceType.QUEEN:
-						type = 'q'
-						break
-					case PieceType.KING:
-						type = 'k'
-						break
-					default:
-						break
-				}
-				if(!piece.color) { type = type.toUpperCase() }
+				type = PieceRepr(piece)
 			} else {
 				type = ' '
 			}
@@ -355,8 +362,15 @@ const ShowBoard = () => {
 	console.log('#-----------------#')
 }
 
+const KingRays = color => {
+	for(let i = 0; i < 8; i++) {
+
+	}
+}
+
 module.exports = {
 	GetPieces,
+	GetPositions,
 	Color,
 	Piece,
 	PieceType,
