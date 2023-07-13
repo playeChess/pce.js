@@ -44,6 +44,13 @@ const Flags = {
 	EN_PASSANT: 4,
 }
 
+const Status = {
+	DEFAULT: 0,
+	CHECK: 1,
+	STALEMATE: 2,
+	CHECKMATE: 3,
+}
+
 class MoveObj {
 	piece
 	from
@@ -140,9 +147,9 @@ const InCoordsList = (coord, coords) => {
 	return false
 }
 
-const CheckMove = (dest) => {
+const CheckMove = (dest, piece=undefined) => {
 	const flags = []
-	const piece = PIECES[selected]
+	piece = piece ?? PIECES[selected]
 
 	if(IsCheck(piece.color)) {
 		const coords_list = KingRays(piece.color)[1]
@@ -285,6 +292,18 @@ const Move = coords => {
 	} else {
 		console.log(`ERROR: ${Notations(coords)} is an invalid move (${move_check[2]})`)
 	}
+}
+
+const GetEveryColoredMove = color => {
+	const mvs = []
+	for(let i = 0; i < 8; i++) {
+		for(let j = 0; j < 8; j++) {
+			for(const piece of PIECES) {
+				if(piece.color === color && CheckMove([i, j], piece)[0]) { mvs.push([piece.coords(), [i, j]]) }
+			}
+		}
+	}
+	return mvs
 }
 
 class Piece {
@@ -451,6 +470,20 @@ const IsCheck = (color, coords = undefined) => {
 	return false
 }
 
+const GetStatus = () => {
+	let status = [Status.DEFAULT, Color.NONE]
+	for(const color of [Color.WHITE, Color.BLACK]) {
+		if(IsCheck(color)) {
+			status = [Status.CHECK, color]
+		}
+		if(GetEveryColoredMove(color).length === 0) {
+			if(JSON.stringify(status) === JSON.stringify([Status.CHECK, color])) { status[0] = Status.CHECKMATE }
+			else { status[0] = Status.STALEMATE }
+		}
+	}
+	return status
+}
+
 module.exports = {
 	GetPieces,
 	GetPositions,
@@ -462,4 +495,5 @@ module.exports = {
 	Coords,
 	ShowBoard,
 	Move,
+	GetStatus,
 }

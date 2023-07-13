@@ -9,26 +9,15 @@ const {
 	Coords,
 	ShowBoard,
 	Move,
+	GetStatus,
 } = require('./pce.js')
 
-new Piece(Color.WHITE, PieceType.KING, ...Coords('d1'))
-new Piece(Color.WHITE, PieceType.ROOK, ...Coords('a2'))
+new Piece(Color.WHITE, PieceType.KING, ...Coords('a1'))
 new Piece(Color.BLACK, PieceType.KING, ...Coords('d7'))
-new Piece(Color.BLACK, PieceType.ROOK, ...Coords('d6'))
+new Piece(Color.BLACK, PieceType.ROOK, ...Coords('b8'))
+new Piece(Color.BLACK, PieceType.ROOK, ...Coords('h2'))
+new Piece(Color.BLACK, PieceType.ROOK, ...Coords('h1'))
 
 ShowBoard()
 
-SelectPiece(Coords('a2'))
-Move(Coords('d2'))
-
-ShowBoard()
-
-SelectPiece(Coords('d6'))
-Move(Coords('d2'))
-
-ShowBoard()
-
-SelectPiece(Coords('d1'))
-Move(Coords('d2'))
-
-ShowBoard()
+console.log(GetStatus())
