@@ -9,23 +9,26 @@ const {
 	Coords,
 	ShowBoard,
 	Move,
-	KingRays,
-	IsCheck,
 } = require('./pce.js')
 
-new Piece(Color.WHITE, PieceType.KING, ...Coords('d4'))
-new Piece(Color.WHITE, PieceType.ROOK, ...Coords('a1'))
-new Piece(Color.BLACK, PieceType.KING, ...Coords('h6'))
-new Piece(Color.BLACK, PieceType.PAWN, ...Coords('c6'))
+new Piece(Color.WHITE, PieceType.KING, ...Coords('d1'))
+new Piece(Color.WHITE, PieceType.ROOK, ...Coords('a2'))
+new Piece(Color.BLACK, PieceType.KING, ...Coords('d7'))
+new Piece(Color.BLACK, PieceType.ROOK, ...Coords('d6'))
 
 ShowBoard()
 
-SelectPiece(Coords('d4'))
-Move(Coords('d5'))
+SelectPiece(Coords('a2'))
+Move(Coords('d2'))
 
 ShowBoard()
 
-SelectPiece(Coords('a1'))
-Move(Coords('a8'))
+SelectPiece(Coords('d6'))
+Move(Coords('d2'))
+
+ShowBoard()
+
+SelectPiece(Coords('d1'))
+Move(Coords('d2'))
 
 ShowBoard()

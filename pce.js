@@ -107,7 +107,7 @@ const GetPath = (start, dest) => {
 	const x = dest[0] - start[0]
 	const y = dest[1] - start[1]
 	for(let i = 1; i < Math.max(Math.abs(x), Math.abs(y)); i++) {
-		steps.push([x === 0 ? 0 : start[0] + (x / Math.abs(x) * i), y === 0 ? 0 : start[0] + (y / Math.abs(y) * i)])
+		steps.push([x === 0 ? start[0] : start[0] + (x / Math.abs(x) * i), y === 0 ? start[1] : start[0] + (y / Math.abs(y) * i)])
 	}
 	return steps
 }
@@ -133,11 +133,23 @@ const BlackConversion = (coords) => [-coords[0], -coords[1]]
 
 const Offset = (start, end) => [end[0] - start[0], end[1] - start[1]]
 
+const InCoordsList = (coord, coords) => {
+	for(const c of coords) {
+		if(JSON.stringify(c) === JSON.stringify(coord)) { return true }
+	}
+	return false
+}
+
 const CheckMove = (dest) => {
 	const flags = []
 	const piece = PIECES[selected]
 
-	if(piece.type !== PieceType.KNIGHT && !CheckPath(piece, dest)) { return false }
+	if(IsCheck(piece.color)) {
+		const coords_list = KingRays(piece.color)[1]
+		if(piece.type !== PieceType.KING && !(coords_list.length > 1 || InCoordsList(dest, coords_list[0]))) { return [false, [], 'Need to move king'] }
+	}
+	if((piece.type === PieceType.KING && IsCheck(piece.color, dest))) { return [false, [], 'Check (king move ->)'] }
+	else if(piece.type !== PieceType.KNIGHT && !CheckPath(piece, dest)) { return [false, [], 'Path'] }
 
 	const last = moves[moves.length - 1]
 	if(
@@ -184,11 +196,11 @@ const CheckMove = (dest) => {
 
 	const [dest_auth, capture_flag] = CheckDest(piece, dest)
 
-	if(!dest_auth) { return false }
+	if(!dest_auth) { return [false, [], 'Destination'] }
 
 	if(capture_flag === 0) { flags.push(capture_flag) }
 	
-	return [Filter(piece.type, flags)(...piece.color ? BlackConversion(Offset(piece.coords(), dest)) : Offset(piece.coords(), dest)), flags]
+	return [Filter(piece.type, flags)(...piece.color ? BlackConversion(Offset(piece.coords(), dest)) : Offset(piece.coords(), dest)), flags, 'Filters']
 }
 
 const SelectPiece = (coords) => {
@@ -240,29 +252,17 @@ const Board = () => {
 const Coords = str =>  [str[1] - 1, ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'].indexOf(str[0])]
 const Notations = coords => `${['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'][coords[1]]}${coords[0] + 1}`
 
-const TakePiece = (coords) => {
+const TakePiece = coords => {
 	const select_index = PIECES.indexOf(GetPiece(coords))
-	material_eval += Material[PIECES[select_index].type] * PIECES[select_index].color ? 1 : -1
+	if(select_index < selected) { selected-- }
+	material_eval += Material[PIECES[select_index].type] * (PIECES[select_index].color ? 1 : -1)
 	PIECES = PIECES.filter((_, index) =>  index !== select_index)
 }
 
 const Move = coords => {
 	const move_check = CheckMove(coords)
 	const start = PIECES[selected].coords()
-	const temp = [
-		structuredClone(PIECES).map(el => {
-			el.__proto__ = PIECES[0].__proto__
-			return el
-		}),
-		Object.entries(structuredClone(POSITIONS)).reduce((acc, value) => {
-			value[1].__proto__ = POSITIONS[Object.keys(POSITIONS)[0]].__proto__
-			acc[value[0]] = value[1]
-			return acc
-		}, {})
-	]
 	if(move_check[0]) {
-		delete POSITIONS[Notations(PIECES[selected].coords())]
-		POSITIONS[Notations(coords)] = PIECES[selected]
 		if(PIECES[selected].type === PieceType.KING) { king_pos[PIECES[selected].color] = coords }
 		if(move_check[1].indexOf(Flags.CAPTURE) !== -1) {
 			TakePiece(coords)
@@ -275,19 +275,15 @@ const Move = coords => {
 			const i = PIECES[selected].color ? 7 : 0
 			GetPiece([i, 7]).file -= 2
 		}
+		POSITIONS[Notations(coords)] = PIECES[selected]
+		delete POSITIONS[Notations(PIECES[selected].coords())];
 		[PIECES[selected].rank, PIECES[selected].file] = coords
 		PIECES[selected].moved = true
-		if(IsCheck(PIECES[selected].color)) {
-			console.log(`ERROR: ${Notations(coords)} would put you in check`)
-			PIECES = temp[0]
-			POSITIONS = temp[1]
-			return
-		}
 		moves.push(new MoveObj(PIECES[selected], start, coords))
 		console.log(`${PIECES[selected].toString()} from ${Notations(start)} (eval: ${material_eval})`)
 		if(IsCheck(1 - PIECES[selected].color)) { console.log(`Your opponent (${PIECES[selected].color ? 'white' : 'black'}) is check`) }
 	} else {
-		console.log(`ERROR: ${Notations(coords)} is an invalid move`)
+		console.log(`ERROR: ${Notations(coords)} is an invalid move (${move_check[2]})`)
 	}
 }
 
@@ -388,7 +384,6 @@ const KingRays = (color, coords=undefined) => {
 	const lines = [[], [], [], [], [], [], [], []]
 	const enemy = [false, false, false, false, false, false, false, false]
 	const out = [false, false, false, false, false, false, false, false]
-	const count = [0, 0, 0, 0, 0, 0, 0, 0]
 	for(let i = 1; i < 8; i++) {
 		const rays = Ray(i)
 		for(let j = 0; j < rays.length; j++) {
@@ -401,6 +396,7 @@ const KingRays = (color, coords=undefined) => {
 				lines[j].push(coord)
 				const piece = GetPiece(coord)
 				if(piece) {
+					if(piece.type === PieceType.KING) { continue }
 					if(piece.color === color) { buffer[j].push(coord) }
 					else {
 						out[j] = true
@@ -446,7 +442,7 @@ const KingRays = (color, coords=undefined) => {
 }
 
 const IsCheck = (color, coords = undefined) => {
-	const [defenders, paths, ncheck, pcheck] = KingRays(color, coords)
+	const [defenders, _, ncheck, pcheck] = KingRays(color, coords)
 	for(const defender of defenders) {
 		if(defender.length === 0) { return true }
 	}
@@ -466,6 +462,4 @@ module.exports = {
 	Coords,
 	ShowBoard,
 	Move,
-	KingRays,
-	IsCheck,
 }
