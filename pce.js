@@ -35,28 +35,6 @@ const Material = {
 	[PieceType.QUEEN]: 9,
 }
 
-const Rank = {
-	1: 0,
-	2: 1,
-	3: 2,
-	4: 3,
-	5: 4,
-	6: 5,
-	7: 6,
-	8: 7,
-}
-
-const File = {
-	a: 0,
-	b: 1,
-	c: 2,
-	d: 3,
-	e: 4,
-	f: 5,
-	g: 6,
-	h: 7,
-}
-
 const Flags = {
 	NONE: -1,
 	CAPTURE: 0,
@@ -374,15 +352,24 @@ const AddCoords = (...coords) => {
 
 const InBounds = coords => coords[0] < 8 && coords[0] >= 0 && coords[1] < 8 && coords[1] >= 0
 
-const Ray = offset => [[offset, offset], [offset, -offset], [-offset, offset], [-offset, -offset], [offset, 0], [0, offset], [-offset, 0], [0, -offset]]
+const Ray = offset => [
+	[offset, offset], [offset, -offset], [-offset, offset], [-offset, -offset],
+	[offset, 0], [0, offset], [-offset, 0], [0, -offset]
+]
 
-const KingRays = color => {
-	const ray_center = king_pos[color]
+const KnightThreats = pos => [
+	AddCoords(pos, [2, 1]), AddCoords(pos, [2, -1]), AddCoords(pos, [-2, 1]), AddCoords(pos, [-2, -1]),
+	AddCoords(pos, [1, 2]), AddCoords(pos, [1, -2]), AddCoords(pos, [-1, 2]), AddCoords(pos, [-1, -2])
+]
+
+const KingRays = (color, coords=undefined) => {
+	const ray_center = coords ?? king_pos[color]
 	// B + R
 	const buffer = [[], [], [], [], [], [], [], []]
 	const lines = [[], [], [], [], [], [], [], []]
 	const enemy = [false, false, false, false, false, false, false, false]
 	const out = [false, false, false, false, false, false, false, false]
+	const count = [0, 0, 0, 0, 0, 0, 0, 0]
 	for(let i = 1; i < 8; i++) {
 		const rays = Ray(i)
 		for(let j = 0; j < rays.length; j++) {
@@ -392,10 +379,10 @@ const KingRays = color => {
 					out[j] = true
 					continue
 				}
-				lines[j].push(Notations(coord))
+				lines[j].push(coord)
 				const piece = GetPiece(coord)
 				if(piece) {
-					if(piece.color === color) { buffer[j].push(Notations(coord)) }
+					if(piece.color === color) { buffer[j].push(coord) }
 					else {
 						out[j] = true
 						if(piece.type === (j < 4 ? PieceType.BISHOP : PieceType.ROOK) || piece.type === PieceType.QUEEN) {
@@ -406,10 +393,33 @@ const KingRays = color => {
 			}
 		}
 	}
+
 	// N
-	const res = [[], []]
+	let ncheck = []
+	const knight_reaches = KnightThreats(ray_center)
+	for(const knight_pos of knight_reaches) {
+		const knight = GetPiece(knight_pos)
+		if(knight && knight.color !== color) { ncheck = knight.coords() }
+	}
+
+	// P
+	let pcheck = []
+	const pawns =  [GetPiece(AddCoords(ray_center, [1, color ? -1 : 1])), GetPiece(AddCoords(ray_center, [color ? -1 : 1, -1]))]
+	for(const pawn of pawns) {
+		if(pawn && pawn.color !== color) { pcheck = pawn.coords() }
+	}
+
+	// Return
+	const res = [
+		[], // Positions of interposed pieces
+		[], // Path they are pinned to
+		ncheck, // Position(s) of opponent's checking knight(s)
+		pcheck // Position(s) of opponent's checking pawn(s)
+	]
 	for(const el of buffer) {
-		if(JSON.stringify(el) != JSON.stringify([])) { res[0].push(el) }
+		if(el.length === 1) { res[0].push(el[0]) }
+		else if(el.length === 0 && enemy[buffer.indexOf(el)]) { res[0].push(el) }
+		else { enemy[buffer.indexOf(el)] = false }
 	} for(let i = 0; i < lines.length; i++) {
 		if(enemy[i]) { res[1].push(lines[i]) }
 	}
@@ -417,21 +427,13 @@ const KingRays = color => {
 }
 
 module.exports = {
-	GetPieces,
-	GetPositions,
 	Color,
 	Piece,
 	PieceType,
-	Rank,
-	File,
-	Filter,
-	Flags,
-	CheckMove,
 	SelectPiece,
 	Board,
-	GetPiece,
 	Coords,
-	Move,
 	ShowBoard,
+	Move,
 	KingRays,
 }
