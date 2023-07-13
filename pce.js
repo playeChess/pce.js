@@ -50,7 +50,8 @@ class MoveObj {
 	to
 
 	constructor(piece = new Piece(Color.NONE, PieceType.NONE, 0, 0), from = [0, 0], to = [0, 0]) {
-		this.piece = JSON.parse(JSON.stringify(piece))
+		this.piece = structuredClone(piece)
+		this.piece.__proto__ = piece.__proto__
 		this.from = from
 		this.to = to
 	}
@@ -245,12 +246,23 @@ const TakePiece = (coords) => {
 	PIECES = PIECES.filter((_, index) =>  index !== select_index)
 }
 
-const Move = (coords) => {
+const Move = coords => {
 	const move_check = CheckMove(coords)
 	const start = PIECES[selected].coords()
+	const temp = [
+		structuredClone(PIECES).map(el => {
+			el.__proto__ = PIECES[0].__proto__
+			return el
+		}),
+		Object.entries(structuredClone(POSITIONS)).reduce((acc, value) => {
+			value[1].__proto__ = POSITIONS[Object.keys(POSITIONS)[0]].__proto__
+			acc[value[0]] = value[1]
+			return acc
+		}, {})
+	]
 	if(move_check[0]) {
-		delete POSITIONS[PIECES[selected].coords()]
-		POSITIONS[coords] = PIECES[selected]
+		delete POSITIONS[Notations(PIECES[selected].coords())]
+		POSITIONS[Notations(coords)] = PIECES[selected]
 		if(PIECES[selected].type === PieceType.KING) { king_pos[PIECES[selected].color] = coords }
 		if(move_check[1].indexOf(Flags.CAPTURE) !== -1) {
 			TakePiece(coords)
@@ -267,6 +279,7 @@ const Move = (coords) => {
 		PIECES[selected].moved = true
 		moves.push(new MoveObj(PIECES[selected], start, coords))
 		console.log(`${PIECES[selected].toString()} from ${Notations(start)} (eval: ${material_eval})`)
+		if(IsCheck(1 - PIECES[selected].color)) { console.log(`Your opponent (${PIECES[selected].color ? 'white' : 'black'}) is check`) }
 	} else {
 		console.log(`ERROR: ${Notations(coords)} is an invalid move`)
 	}
@@ -289,9 +302,9 @@ class Piece {
 		if(type === PieceType.KING) { king_pos[color] = this.coords() }
 	}
 	
-	coords = () => [this.rank, this.file]
+	coords() { return [this.rank, this.file] }
 
-	toString = () => `${this.color ? 'Black' : 'White'} ${this.type === 0 ? 'pawn' : this.type === 1 ? 'knight' : this.type === 2 ? 'bishop' : this.type === 3 ? 'rook' : this.type === 4 ? 'queen' : 'king'} on ${Notations(this.coords())}`
+	toString() { return `${this.color ? 'Black' : 'White'} ${this.type === 0 ? 'pawn' : this.type === 1 ? 'knight' : this.type === 2 ? 'bishop' : this.type === 3 ? 'rook' : this.type === 4 ? 'queen' : 'king'} on ${Notations(this.coords())}` }
 }
 
 const PieceRepr = piece => {
@@ -426,7 +439,19 @@ const KingRays = (color, coords=undefined) => {
 	return res
 }
 
+const IsCheck = (color, coords = undefined) => {
+	const [defenders, paths, ncheck, pcheck] = KingRays(color, coords)
+	for(const defender of defenders) {
+		if(defender.length === 0) { return true }
+	}
+	if(ncheck.length !== 0) { return true }
+	if(pcheck.length !== 0) { return true }
+	return false
+}
+
 module.exports = {
+	GetPieces,
+	GetPositions,
 	Color,
 	Piece,
 	PieceType,
@@ -436,4 +461,5 @@ module.exports = {
 	ShowBoard,
 	Move,
 	KingRays,
+	IsCheck,
 }
