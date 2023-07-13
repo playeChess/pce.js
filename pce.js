@@ -1,6 +1,6 @@
 var PIECES = []
 
-const POSITIONS = {}
+var POSITIONS = {}
 
 const GetPieces = () => PIECES
 const GetPositions = () => POSITIONS
@@ -277,6 +277,12 @@ const Move = coords => {
 		}
 		[PIECES[selected].rank, PIECES[selected].file] = coords
 		PIECES[selected].moved = true
+		if(IsCheck(PIECES[selected].color)) {
+			console.log(`ERROR: ${Notations(coords)} would put you in check`)
+			PIECES = temp[0]
+			POSITIONS = temp[1]
+			return
+		}
 		moves.push(new MoveObj(PIECES[selected], start, coords))
 		console.log(`${PIECES[selected].toString()} from ${Notations(start)} (eval: ${material_eval})`)
 		if(IsCheck(1 - PIECES[selected].color)) { console.log(`Your opponent (${PIECES[selected].color ? 'white' : 'black'}) is check`) }

@@ -20,8 +20,10 @@ new Piece(Color.BLACK, PieceType.PAWN, ...Coords('c6'))
 
 ShowBoard()
 
-SelectPiece(Coords('c6'))
-Move(Coords('c5'))
+SelectPiece(Coords('d4'))
+Move(Coords('d5'))
+
+ShowBoard()
 
 SelectPiece(Coords('a1'))
 Move(Coords('a8'))
