@@ -1,33 +1,26 @@
 const {
-	GetPieces,
-	GetPositions,
-	SelectPiece,
 	Board,
+	Piece,
 	Coords,
-	ShowBoard,
-	Move,
-	GetStatus,
-	FEN,
-	Promote,
 } = require('./pce.js')
 
-Board('4K3/8/8/8/8/8/P7/4k3')
+Board.init('4K3/8/8/8/8/8/P7/4k3')
 
-ShowBoard()
+Board.show()
 
-SelectPiece(Coords('a7'))
-Move(Coords('a8'))
+Piece.select(Coords('a7'))
+Piece.move(Coords('a8'))
 
-ShowBoard()
+Board.show()
 
-Promote(Coords('a8'))
+Piece.promote(Coords('a8'))
 
-ShowBoard()
+Board.show()
 
-SelectPiece(Coords('e8'))
-Move(Coords('g8'))
+Piece.select(Coords('e8'))
+Piece.move(Coords('g8'))
 
-ShowBoard()
+Board.show()
 
-console.log(GetStatus())
-console.log(FEN())
+console.log(Board.status())
+console.log(Board.fen())

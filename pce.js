@@ -632,17 +632,18 @@ const GetStatus = () => {
 }
 
 module.exports = {
-	GetPieces,
-	GetPositions,
-	Color,
-	Piece,
-	PieceType,
-	SelectPiece,
-	Board,
+	Board: {
+		init: Board,
+		show: ShowBoard,
+		pieces: GetPieces,
+		positions: GetPositions,
+		status: GetStatus,
+		fen: FEN,
+	},
+	Piece: {
+		select: SelectPiece,
+		move: Move,
+		promote: Promote,
+	},
 	Coords,
-	ShowBoard,
-	Move,
-	GetStatus,
-	FEN,
-	Promote,
 }
