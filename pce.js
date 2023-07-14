@@ -400,9 +400,11 @@ const PieceRepr = piece => {
 }
 
 const ShowBoard = () => {
-	console.log('#-----------------#')
+	console.log('')
+	console.log('    a b c d e f g h')
+	console.log('  #-----------------#')
 	for(let i = 7; i >= 0; i--) {
-		let str = '| '
+		let str = `${i + 1} | `
 		for(let j = 0; j < 8; j++) {
 			let type
 			const piece = GetPiece([i, j])
@@ -411,9 +413,11 @@ const ShowBoard = () => {
 			} else { type = ' ' }
 			str += type + ' '
 		}
-		console.log(str + '|')
+		console.log(str + ` | ${i + 1}`)
 	}
-	console.log('#-----------------#')
+	console.log('  #-----------------#')
+	console.log('    a b c d e f g h')
+	console.log('')
 }
 
 const FEN = () => {
