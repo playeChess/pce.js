@@ -185,8 +185,11 @@ const CheckMove = (dest, piece=undefined) => {
 		qrook.type === PieceType.ROOK &&
 		!qrook.moved &&
 		GetPiece(rank, 1) === undefined &&
+		!IsCheck(piece.color, [rank, 1]) &&
 		GetPiece(rank, 2) === undefined &&
-		GetPiece(rank, 3) === undefined
+		!IsCheck(piece.color, [rank, 2]) &&
+		GetPiece(rank, 3) === undefined &&
+		!IsCheck(piece.color, [rank, 3])
 	) { flags.push(Flags.QUEENSIDE_CASTLE) }
 	if(
 		JSON.stringify(dest) === JSON.stringify([rank, 6]) &&
@@ -196,7 +199,9 @@ const CheckMove = (dest, piece=undefined) => {
 		rook.type === PieceType.ROOK &&
 		!rook.moved &&
 		GetPiece(rank, 5) === undefined &&
-		GetPiece(rank, 6) === undefined
+		!IsCheck(piece.color, [rank, 5]) &&
+		GetPiece(rank, 6) === undefined &&
+		!IsCheck(piece.color, [rank, 6])
 	) { flags.push(Flags.CASTLE) }
 	
 	if(!piece.moved) { flags.push(Flags.FIRST) }
