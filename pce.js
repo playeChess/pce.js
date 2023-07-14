@@ -516,14 +516,14 @@ const KingRays = (color, coords=undefined) => {
 	const knight_reaches = KnightThreats(ray_center)
 	for(const knight_pos of knight_reaches) {
 		const knight = GetPiece(knight_pos)
-		if(knight && knight.color !== color) { ncheck = knight.coords() }
+		if(knight && knight.type === PieceType.KNIGHT && knight.color !== color) { ncheck = knight.coords() }
 	}
 
 	// P
 	let pcheck = []
 	const pawns =  [GetPiece(AddCoords(ray_center, [1, color ? -1 : 1])), GetPiece(AddCoords(ray_center, [color ? -1 : 1, -1]))]
 	for(const pawn of pawns) {
-		if(pawn && pawn.color !== color) { pcheck = pawn.coords() }
+		if(pawn && pawn.type === PieceType.PAWN && pawn.color !== color) { pcheck = pawn.coords() }
 	}
 
 	// Return
