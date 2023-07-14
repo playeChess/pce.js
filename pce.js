@@ -5,7 +5,6 @@ const GetPieces = () => PIECES
 const None = -1
 
 var selected = None
-var material_eval = 0
 const moves = []
 var en_passant_offset = 0
 const king_pos = [[0, 4], [7, 4]]
@@ -30,6 +29,7 @@ const PieceType = {
 }
 
 const Material = {
+	[PieceType.KING]: 0,
 	[PieceType.PAWN]: 1,
 	[PieceType.KNIGHT]: 3,
 	[PieceType.BISHOP]: 3,
@@ -272,13 +272,12 @@ const Board = (fen = 'RNBQKBNR/PPPPPPPP/8/8/8/8/pppppppp/rnbqkbnr') => {
 	}
 }
 
+const MaterialEval = () => Object.values(PIECES).reduce((eva, piece) => eva + Material[piece.type] * (piece.color ? 1 : -1), 0)
+
 const Coords = str =>  [str[1] - 1, ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'].indexOf(str[0])]
 const Notations = coords => `${['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'][coords[1]]}${coords[0] + 1}`
 
-const TakePiece = coords => {
-	material_eval += Material[PIECES[select_index].type] * (PIECES[select_index].color ? 1 : -1)
-	delete PIECES[Notations(coords)]
-}
+const TakePiece = coords => { delete PIECES[Notations(coords)] }
 
 const Move = notation => {
 	const coords = Coords(notation)
@@ -314,7 +313,7 @@ const Move = notation => {
 		[PIECES[notation].rank, PIECES[notation].file] = coords
 		PIECES[notation].moved = true
 		moves.push(new MoveObj(PIECES[notation], start, coords))
-		console.log(`${PIECES[notation].toString()} from ${Notations(start)} (eval: ${material_eval})`)
+		console.log(`${PIECES[notation].toString()} from ${Notations(start)} (eval: ${MaterialEval()})`)
 		if(IsCheck(1 - PIECES[notation].color)) { console.log(`Your opponent (${PIECES[notation].color ? 'white' : 'black'}) is check`) }
 		fen_history.push(FEN())
 		move_count++
