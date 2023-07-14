@@ -231,6 +231,7 @@ const GetPiece = coords => PIECES[Notations(coords)]
 const IsUpperCase = str => str === str.toUpperCase()
 
 const Board = (fen = 'RNBQKBNR/PPPPPPPP/8/8/8/8/pppppppp/rnbqkbnr') => {
+	fen_history.push(fen)
 	let [rank, file] = [0, 0]
 	for(const line of fen.split('/')) {
 		file = 0
