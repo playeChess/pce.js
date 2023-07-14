@@ -228,42 +228,85 @@ const SelectPiece = (coords) => {
 
 const GetPiece = coords => POSITIONS[Notations(coords)]
 
-const Board = () => {
-	new Piece(Color.WHITE, PieceType.ROOK, ...Coords('a1'))
-	new Piece(Color.WHITE, PieceType.KNIGHT, ...Coords('b1'))
-	new Piece(Color.WHITE, PieceType.BISHOP, ...Coords('c1'))
-	new Piece(Color.WHITE, PieceType.QUEEN, ...Coords('d1'))
-	new Piece(Color.WHITE, PieceType.KING, ...Coords('e1'))
-	new Piece(Color.WHITE, PieceType.BISHOP, ...Coords('f1'))
-	new Piece(Color.WHITE, PieceType.KNIGHT, ...Coords('g1'))
-	new Piece(Color.WHITE, PieceType.ROOK, ...Coords('h1'))
+const IsUpperCase = str => str === str.toUpperCase()
 
-	new Piece(Color.WHITE, PieceType.PAWN, ...Coords('a2'))
-	new Piece(Color.WHITE, PieceType.PAWN, ...Coords('b2'))
-	new Piece(Color.WHITE, PieceType.PAWN, ...Coords('c2'))
-	new Piece(Color.WHITE, PieceType.PAWN, ...Coords('d2'))
-	new Piece(Color.WHITE, PieceType.PAWN, ...Coords('e2'))
-	new Piece(Color.WHITE, PieceType.PAWN, ...Coords('f2'))
-	new Piece(Color.WHITE, PieceType.PAWN, ...Coords('g2'))
-	new Piece(Color.WHITE, PieceType.PAWN, ...Coords('h2'))
-	
-	new Piece(Color.BLACK, PieceType.PAWN, ...Coords('a7'))
-	new Piece(Color.BLACK, PieceType.PAWN, ...Coords('b7'))
-	new Piece(Color.BLACK, PieceType.PAWN, ...Coords('c7'))
-	new Piece(Color.BLACK, PieceType.PAWN, ...Coords('d7'))
-	new Piece(Color.BLACK, PieceType.PAWN, ...Coords('e7'))
-	new Piece(Color.BLACK, PieceType.PAWN, ...Coords('f7'))
-	new Piece(Color.BLACK, PieceType.PAWN, ...Coords('g7'))
-	new Piece(Color.BLACK, PieceType.PAWN, ...Coords('h7'))
-	
-	new Piece(Color.BLACK, PieceType.ROOK, ...Coords('a8'))
-	new Piece(Color.BLACK, PieceType.KNIGHT, ...Coords('b8'))
-	new Piece(Color.BLACK, PieceType.BISHOP, ...Coords('c8'))
-	new Piece(Color.BLACK, PieceType.QUEEN, ...Coords('d8'))
-	new Piece(Color.BLACK, PieceType.KING, ...Coords('e8'))
-	new Piece(Color.BLACK, PieceType.BISHOP, ...Coords('f8'))
-	new Piece(Color.BLACK, PieceType.KNIGHT, ...Coords('g8'))
-	new Piece(Color.BLACK, PieceType.ROOK, ...Coords('h8'))
+const Board = (fen = undefined) => {
+	if(fen) {
+		let [rank, file] = [0, 0]
+		for(const line of fen.split('/')) {
+			if(line === '8') { continue }
+			for(const char of line) {
+				if('pnbrqk'.indexOf(char.toLowerCase()) !== -1) {
+					let color, type
+					switch(char.toLowerCase()) {
+						case 'p':
+							type = PieceType.PAWN
+							break
+						case 'n':
+							type = PieceType.KNIGHT
+							break
+						case 'b':
+							type = PieceType.BISHOP
+							break
+						case 'r':
+							type = PieceType.ROOK
+							break
+						case 'q':
+							type = PieceType.QUEEN
+							break
+						case 'k':
+							type = PieceType.KING
+							break
+						default:
+							break
+					}
+
+					color = IsUpperCase(char) ? Color.WHITE : Color.BLACK
+
+					new Piece(color, type, rank, file)
+				} else {
+					file -= -char
+				}
+			}
+			rank++
+		}
+	} else {
+		new Piece(Color.WHITE, PieceType.ROOK, ...Coords('a1'))
+		new Piece(Color.WHITE, PieceType.KNIGHT, ...Coords('b1'))
+		new Piece(Color.WHITE, PieceType.BISHOP, ...Coords('c1'))
+		new Piece(Color.WHITE, PieceType.QUEEN, ...Coords('d1'))
+		new Piece(Color.WHITE, PieceType.KING, ...Coords('e1'))
+		new Piece(Color.WHITE, PieceType.BISHOP, ...Coords('f1'))
+		new Piece(Color.WHITE, PieceType.KNIGHT, ...Coords('g1'))
+		new Piece(Color.WHITE, PieceType.ROOK, ...Coords('h1'))
+
+		new Piece(Color.WHITE, PieceType.PAWN, ...Coords('a2'))
+		new Piece(Color.WHITE, PieceType.PAWN, ...Coords('b2'))
+		new Piece(Color.WHITE, PieceType.PAWN, ...Coords('c2'))
+		new Piece(Color.WHITE, PieceType.PAWN, ...Coords('d2'))
+		new Piece(Color.WHITE, PieceType.PAWN, ...Coords('e2'))
+		new Piece(Color.WHITE, PieceType.PAWN, ...Coords('f2'))
+		new Piece(Color.WHITE, PieceType.PAWN, ...Coords('g2'))
+		new Piece(Color.WHITE, PieceType.PAWN, ...Coords('h2'))
+		
+		new Piece(Color.BLACK, PieceType.PAWN, ...Coords('a7'))
+		new Piece(Color.BLACK, PieceType.PAWN, ...Coords('b7'))
+		new Piece(Color.BLACK, PieceType.PAWN, ...Coords('c7'))
+		new Piece(Color.BLACK, PieceType.PAWN, ...Coords('d7'))
+		new Piece(Color.BLACK, PieceType.PAWN, ...Coords('e7'))
+		new Piece(Color.BLACK, PieceType.PAWN, ...Coords('f7'))
+		new Piece(Color.BLACK, PieceType.PAWN, ...Coords('g7'))
+		new Piece(Color.BLACK, PieceType.PAWN, ...Coords('h7'))
+		
+		new Piece(Color.BLACK, PieceType.ROOK, ...Coords('a8'))
+		new Piece(Color.BLACK, PieceType.KNIGHT, ...Coords('b8'))
+		new Piece(Color.BLACK, PieceType.BISHOP, ...Coords('c8'))
+		new Piece(Color.BLACK, PieceType.QUEEN, ...Coords('d8'))
+		new Piece(Color.BLACK, PieceType.KING, ...Coords('e8'))
+		new Piece(Color.BLACK, PieceType.BISHOP, ...Coords('f8'))
+		new Piece(Color.BLACK, PieceType.KNIGHT, ...Coords('g8'))
+		new Piece(Color.BLACK, PieceType.ROOK, ...Coords('h8'))
+	}
 }
 
 const Coords = str =>  [str[1] - 1, ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'].indexOf(str[0])]

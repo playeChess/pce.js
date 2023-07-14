@@ -16,25 +16,9 @@ const {
 new Piece(Color.WHITE, PieceType.KING, ...Coords('e1'))
 new Piece(Color.BLACK, PieceType.KING, ...Coords('e8'))
 
-ShowBoard()
-
-SelectPiece(Coords('e1'))
-Move(Coords('e2'))
+Board('4K3/8/8/8/8/8/8/4k3')
 
 ShowBoard()
-
-SelectPiece(Coords('e8'))
-Move(Coords('e7'))
-
-ShowBoard()
-
-SelectPiece(Coords('e2'))
-Move(Coords('e1'))
-
-ShowBoard()
-
-SelectPiece(Coords('e7'))
-Move(Coords('e8'))
 
 console.log(GetStatus())
 console.log(FEN())
