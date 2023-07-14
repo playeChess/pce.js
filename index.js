@@ -1,21 +1,11 @@
 const { Board, Piece } = require('./pce.js')
 
-Board.init()
+Board.init('K7/1p6/8/7P/8/8/8/7k')
 
 Board.show()
 
-Piece.select('e2')
-Piece.move('e4')
-
-Board.show()
-
-Piece.select('d7')
-Piece.move('d5')
-
-Board.show()
-
-Piece.select('e4')
-Piece.move('d5')
+Piece.select('h4')
+Piece.move('h5')
 
 Board.show()
 

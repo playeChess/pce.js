@@ -157,8 +157,13 @@ const CheckMove = (dest, piece=undefined) => {
 	piece = piece ?? PIECES[selected]
 
 	if(IsCheck(piece.color)) {
-		const coords_list = KingRays(piece.color)[1]
-		if(coords_list.length !== 0 && piece.type !== PieceType.KING && !(coords_list.length > 1 || InCoordsList(dest, coords_list[0]))) { return [false, [], 'Need to move king'] }
+		const rays = KingRays(piece.color)
+		const coords_list = rays[1]
+		const ncheck = rays[2]
+		const pcheck = rays[3]
+		if(JSON.stringify(ncheck) !== JSON.stringify([]) && piece.type !== PieceType.KING && JSON.stringify(dest) != JSON.stringify(ncheck)) { return [false, [], 'Need to move/protect king (from n)'] }
+		if(JSON.stringify(pcheck) !== JSON.stringify([]) && piece.type !== PieceType.KING && JSON.stringify(dest) != JSON.stringify(pcheck)) { return [false, [], 'Need to move/protect king (from p)'] }
+		if(coords_list.length !== 0 && piece.type !== PieceType.KING && !(coords_list.length > 1 || InCoordsList(dest, coords_list[0]))) { return [false, [], 'Need to move/protect king'] }
 	}
 	if((piece.type === PieceType.KING && IsCheck(piece.color, dest))) { return [false, [], 'Check (king move ->)'] }
 	else if(piece.type !== PieceType.KNIGHT && !CheckPath(piece, dest)) { return [false, [], 'Path'] }
