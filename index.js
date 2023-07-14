@@ -12,11 +12,21 @@ const {
 	GetStatus,
 } = require('./pce.js')
 
-new Piece(Color.WHITE, PieceType.KING, ...Coords('a1'))
-new Piece(Color.BLACK, PieceType.KING, ...Coords('d7'))
-new Piece(Color.BLACK, PieceType.ROOK, ...Coords('b8'))
-new Piece(Color.BLACK, PieceType.ROOK, ...Coords('h2'))
-new Piece(Color.BLACK, PieceType.ROOK, ...Coords('h1'))
+new Piece(Color.WHITE, PieceType.KING, ...Coords('e1'))
+new Piece(Color.WHITE, PieceType.ROOK, ...Coords('a1'))
+new Piece(Color.BLACK, PieceType.KING, ...Coords('e8'))
+new Piece(Color.BLACK, PieceType.ROOK, ...Coords('h8'))
+new Piece(Color.BLACK, PieceType.ROOK, ...Coords('d8'))
+
+ShowBoard()
+
+SelectPiece(Coords('e1'))
+Move(Coords('c1'))
+
+ShowBoard()
+
+SelectPiece(Coords('e8'))
+Move(Coords('g8'))
 
 ShowBoard()
 

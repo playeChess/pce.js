@@ -69,7 +69,7 @@ const HasFlag = (flags, flag) => flags.indexOf(flag) !== -1
 const DefaultFilter = (rank, file) => rank < 8 && rank > -8 && file < 8 && file > -8 && !(rank === 0 && file === 0)
 
 const BaseFilters = {
-	[PieceType.PAWN]: (rank, file) => false, // DefaultFilter(rank, file) && (rank === 1 && file === 0),
+	[PieceType.PAWN]: () => false,
 	[PieceType.KNIGHT]: (rank, file) => DefaultFilter(rank, file) && ((Math.abs(rank) === 2 && Math.abs(file) === 1) || (Math.abs(rank) === 1 && Math.abs(file) === 2)),
 	[PieceType.BISHOP]: (rank, file) => DefaultFilter(rank, file) && (Math.abs(rank) === Math.abs(file)),
 	[PieceType.ROOK]: (rank, file) => DefaultFilter(rank, file) && (rank * file === 0),
@@ -153,7 +153,7 @@ const CheckMove = (dest, piece=undefined) => {
 
 	if(IsCheck(piece.color)) {
 		const coords_list = KingRays(piece.color)[1]
-		if(piece.type !== PieceType.KING && !(coords_list.length > 1 || InCoordsList(dest, coords_list[0]))) { return [false, [], 'Need to move king'] }
+		if(coords_list.length !== 0 && piece.type !== PieceType.KING && !(coords_list.length > 1 || InCoordsList(dest, coords_list[0]))) { return [false, [], 'Need to move king'] }
 	}
 	if((piece.type === PieceType.KING && IsCheck(piece.color, dest))) { return [false, [], 'Check (king move ->)'] }
 	else if(piece.type !== PieceType.KNIGHT && !CheckPath(piece, dest)) { return [false, [], 'Path'] }
@@ -207,7 +207,7 @@ const CheckMove = (dest, piece=undefined) => {
 
 	if(capture_flag === 0) { flags.push(capture_flag) }
 	
-	return [Filter(piece.type, flags)(...piece.color ? BlackConversion(Offset(piece.coords(), dest)) : Offset(piece.coords(), dest)), flags, 'Filters']
+	return [Filter(piece.type, flags)(...piece.color && piece.type !== PieceType.KING ? BlackConversion(Offset(piece.coords(), dest)) : Offset(piece.coords(), dest)), flags, 'Filters']
 }
 
 const SelectPiece = (coords) => {
@@ -276,11 +276,15 @@ const Move = coords => {
 		} else if(move_check[1].indexOf(Flags.EN_PASSANT) !== -1) {
 			TakePiece([coords[0] - 1, coords[1]])
 		} else if(move_check[1].indexOf(Flags.QUEENSIDE_CASTLE) !== -1) {
-			const i = PIECES[selected].color ? 7 : 0
-			GetPiece([i, 0]).file += 3
+			const rank = PIECES[selected].color ? 7 : 0
+			GetPiece([rank, 0]).file = 3
+			POSITIONS[Notations([rank, 3])] = GetPiece([rank, 0])
+			delete POSITIONS[Notations([rank, 0])]
 		} else if(move_check[1].indexOf(Flags.CASTLE) !== -1) {
-			const i = PIECES[selected].color ? 7 : 0
-			GetPiece([i, 7]).file -= 2
+			const rank = PIECES[selected].color ? 7 : 0
+			GetPiece([rank, 7]).file = 5
+			POSITIONS[Notations([rank, 5])] = GetPiece([rank, 7])
+			delete POSITIONS[Notations([rank, 7])]
 		}
 		POSITIONS[Notations(coords)] = PIECES[selected]
 		delete POSITIONS[Notations(PIECES[selected].coords())];
