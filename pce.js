@@ -119,7 +119,7 @@ const GetPath = (start, dest) => {
 	const x = dest[0] - start[0]
 	const y = dest[1] - start[1]
 	for(let i = 1; i < Math.max(Math.abs(x), Math.abs(y)); i++) {
-		steps.push([x === 0 ? start[0] : start[0] + (x / Math.abs(x) * i), y === 0 ? start[1] : start[0] + (y / Math.abs(y) * i)])
+		steps.push([x === 0 ? start[0] : start[0] + (x / Math.abs(x) * i), y === 0 ? start[1] : start[1] + (y / Math.abs(y) * i)])
 	}
 	return steps
 }
