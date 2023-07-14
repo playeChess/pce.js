@@ -152,10 +152,23 @@ const InCoordsList = (coord, coords) => {
 	return false
 }
 
+const KingAura = coords => [
+	[coords[0] + 1, coords[1] + 1],
+	[coords[0] + 1, coords[1]],
+	[coords[0], coords[1] + 1],
+	[coords[0] + 1, coords[1] - 1],
+	[coords[0] - 1, coords[1] + 1],
+	[coords[0] - 1, coords[1] - 1],
+	[coords[0] - 1, coords[1]],
+	[coords[0], coords[1] - 1],
+]
+
 const CheckMove = (dest, piece=undefined) => {
 	const flags = []
 	piece = piece ?? PIECES[selected]
 
+	if(piece.type === PieceType.KING && InCoordsList(dest, KingAura(king_pos[1 - piece.color]))) { return [false, [], 'Kings too close'] }
+	
 	if(IsCheck(piece.color)) {
 		const rays = KingRays(piece.color)
 		const coords_list = rays[1]
