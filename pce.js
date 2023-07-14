@@ -5,22 +5,25 @@ var POSITIONS = {}
 const GetPieces = () => PIECES
 const GetPositions = () => POSITIONS
 
-var selected = -1
+const None = -1
+
+var selected = None
 var material_eval = 0
 const moves = []
 var en_passant_offset = 0
 const king_pos = [[0, 4], [7, 4]]
 const fen_history = []
 var move_count = 0
+var promotion = [None, None]
 
 const Color = {
-	NONE: -1,
+	NONE: None,
 	WHITE: 0,
 	BLACK: 1,
 }
 
 const PieceType = {
-	NONE: -1,
+	NONE: None,
 	PAWN: 0,
 	KNIGHT: 1,
 	BISHOP: 2,
@@ -38,7 +41,7 @@ const Material = {
 }
 
 const Flags = {
-	NONE: -1,
+	NONE: None,
 	CAPTURE: 0,
 	FIRST: 1,
 	CASTLE: 2,
@@ -69,7 +72,7 @@ class MoveObj {
 	}
 }
 
-const HasFlag = (flags, flag) => flags.indexOf(flag) !== -1
+const HasFlag = (flags, flag) => flags.indexOf(flag) !== None
 
 const DefaultFilter = (rank, file) => rank < 8 && rank > -8 && file < 8 && file > -8 && !(rank === 0 && file === 0)
 
@@ -234,9 +237,9 @@ const Board = (fen = undefined) => {
 	if(fen) {
 		let [rank, file] = [0, 0]
 		for(const line of fen.split('/')) {
-			if(line === '8') { continue }
+			file = 0
 			for(const char of line) {
-				if('pnbrqk'.indexOf(char.toLowerCase()) !== -1) {
+				if('pnbrqk'.indexOf(char.toLowerCase()) !== None) {
 					let color, type
 					switch(char.toLowerCase()) {
 						case 'p':
@@ -324,19 +327,24 @@ const Move = coords => {
 	const start = PIECES[selected].coords()
 	if(move_check[0]) {
 		if(PIECES[selected].type === PieceType.KING) { king_pos[PIECES[selected].color] = coords }
-		if(PIECES[selected].type === PieceType.PAWN) { move_count = -1 }
-		if(move_check[1].indexOf(Flags.CAPTURE) !== -1) {
+		if(PIECES[selected].type === PieceType.PAWN) {
+			move_count = -1
+			if(coords[0] === (PIECES[selected].color ? 0 : 7)) {
+				promotion = coords
+			}
+		}
+		if(move_check[1].indexOf(Flags.CAPTURE) !== None) {
 			TakePiece(coords)
 			move_count = -1
-		} else if(move_check[1].indexOf(Flags.EN_PASSANT) !== -1) {
+		} else if(move_check[1].indexOf(Flags.EN_PASSANT) !== None) {
 			TakePiece([coords[0] - 1, coords[1]])
 			move_count = -1
-		} else if(move_check[1].indexOf(Flags.QUEENSIDE_CASTLE) !== -1) {
+		} else if(move_check[1].indexOf(Flags.QUEENSIDE_CASTLE) !== None) {
 			const rank = PIECES[selected].color ? 7 : 0
 			GetPiece([rank, 0]).file = 3
 			POSITIONS[Notations([rank, 3])] = GetPiece([rank, 0])
 			delete POSITIONS[Notations([rank, 0])]
-		} else if(move_check[1].indexOf(Flags.CASTLE) !== -1) {
+		} else if(move_check[1].indexOf(Flags.CASTLE) !== None) {
 			const rank = PIECES[selected].color ? 7 : 0
 			GetPiece([rank, 7]).file = 5
 			POSITIONS[Notations([rank, 5])] = GetPiece([rank, 7])
@@ -353,6 +361,19 @@ const Move = coords => {
 		move_count++
 	} else {
 		console.log(`ERROR: ${Notations(coords)} is an invalid move (${move_check[2]})`)
+	}
+}
+
+const Promote = (coords, type = PieceType.QUEEN) => {
+	if(JSON.stringify(coords) === JSON.stringify(promotion)) {
+		if(type === PieceType.KNIGHT || type === PieceType.BISHOP || type === PieceType.ROOK || type === PieceType.QUEEN) {
+			PIECES[PIECES.indexOf(GetPiece(coords))].type = type
+			POSITIONS[Notations(coords)].type = type
+		} else {
+			console.log('Invalid type')
+		}
+	} else {
+		console.log('Invalid coords')
 	}
 }
 
@@ -569,7 +590,9 @@ const InsufficientMaterial = () => {
 	let bcount = 0
 	for(const piece of PIECES) {
 		switch(piece.type) {
-			case PieceType.PAWN, PieceType.ROOK, PieceType.QUEEN:
+			case PieceType.PAWN:
+			case PieceType.ROOK:
+			case PieceType.QUEEN:
 				return false
 			case PieceType.KNIGHT:
 				ncount++
@@ -604,6 +627,7 @@ const GetStatus = () => {
 			else { status[0] = Status.STALEMATE }
 		}
 	}
+	status.push(promotion)
 	return status
 }
 
@@ -620,4 +644,5 @@ module.exports = {
 	Move,
 	GetStatus,
 	FEN,
+	Promote,
 }
