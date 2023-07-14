@@ -1,9 +1,6 @@
-var PIECES = []
-
-var POSITIONS = {}
+var PIECES = {}
 
 const GetPieces = () => PIECES
-const GetPositions = () => POSITIONS
 
 const None = -1
 
@@ -64,8 +61,8 @@ class MoveObj {
 	from
 	to
 
-	constructor(piece = new Piece(Color.NONE, PieceType.NONE, 0, 0), from = [0, 0], to = [0, 0]) {
-		this.piece = structuredClone(piece)
+	constructor(piece, from = [0, 0], to = [0, 0]) {
+		this.piece = piece.clone()
 		this.piece.__proto__ = piece.__proto__
 		this.from = from
 		this.to = to
@@ -223,92 +220,55 @@ const CheckMove = (dest, piece=undefined) => {
 	return [Filter(piece.type, flags)(...piece.color && piece.type !== PieceType.KING ? BlackConversion(Offset(piece.coords(), dest)) : Offset(piece.coords(), dest)), flags, 'Filters']
 }
 
-const SelectPiece = (coords) => {
-	for(let i = 0; i < PIECES.length; i++) {
-		if(JSON.stringify(coords) === JSON.stringify(PIECES[i].coords())) { selected = i }
+const SelectPiece = (notation) => {
+	for(const nota of Object.keys(PIECES)) {
+		if(nota === notation) { selected = notation }
 	}
 }
 
-const GetPiece = coords => POSITIONS[Notations(coords)]
+const GetPiece = coords => PIECES[Notations(coords)]
 
 const IsUpperCase = str => str === str.toUpperCase()
 
-const Board = (fen = undefined) => {
-	if(fen) {
-		let [rank, file] = [0, 0]
-		for(const line of fen.split('/')) {
-			file = 0
-			for(const char of line) {
-				if('pnbrqk'.indexOf(char.toLowerCase()) !== None) {
-					let color, type
-					switch(char.toLowerCase()) {
-						case 'p':
-							type = PieceType.PAWN
-							break
-						case 'n':
-							type = PieceType.KNIGHT
-							break
-						case 'b':
-							type = PieceType.BISHOP
-							break
-						case 'r':
-							type = PieceType.ROOK
-							break
-						case 'q':
-							type = PieceType.QUEEN
-							break
-						case 'k':
-							type = PieceType.KING
-							break
-						default:
-							break
-					}
-
-					color = IsUpperCase(char) ? Color.WHITE : Color.BLACK
-
-					new Piece(color, type, rank, file)
-				} else {
-					file -= -char
+const Board = (fen = 'RNBQKBNR/PPPPPPPP/8/8/8/8/pppppppp/rnbqkbnr') => {
+	let [rank, file] = [0, 0]
+	for(const line of fen.split('/')) {
+		file = 0
+		for(const char of line) {
+			if('pnbrqk'.indexOf(char.toLowerCase()) !== None) {
+				let color, type
+				switch(char.toLowerCase()) {
+					case 'p':
+						type = PieceType.PAWN
+						break
+					case 'n':
+						type = PieceType.KNIGHT
+						break
+					case 'b':
+						type = PieceType.BISHOP
+						break
+					case 'r':
+						type = PieceType.ROOK
+						break
+					case 'q':
+						type = PieceType.QUEEN
+						break
+					case 'k':
+						type = PieceType.KING
+						break
+					default:
+						break
 				}
-			}
-			rank++
-		}
-	} else {
-		new Piece(Color.WHITE, PieceType.ROOK, ...Coords('a1'))
-		new Piece(Color.WHITE, PieceType.KNIGHT, ...Coords('b1'))
-		new Piece(Color.WHITE, PieceType.BISHOP, ...Coords('c1'))
-		new Piece(Color.WHITE, PieceType.QUEEN, ...Coords('d1'))
-		new Piece(Color.WHITE, PieceType.KING, ...Coords('e1'))
-		new Piece(Color.WHITE, PieceType.BISHOP, ...Coords('f1'))
-		new Piece(Color.WHITE, PieceType.KNIGHT, ...Coords('g1'))
-		new Piece(Color.WHITE, PieceType.ROOK, ...Coords('h1'))
 
-		new Piece(Color.WHITE, PieceType.PAWN, ...Coords('a2'))
-		new Piece(Color.WHITE, PieceType.PAWN, ...Coords('b2'))
-		new Piece(Color.WHITE, PieceType.PAWN, ...Coords('c2'))
-		new Piece(Color.WHITE, PieceType.PAWN, ...Coords('d2'))
-		new Piece(Color.WHITE, PieceType.PAWN, ...Coords('e2'))
-		new Piece(Color.WHITE, PieceType.PAWN, ...Coords('f2'))
-		new Piece(Color.WHITE, PieceType.PAWN, ...Coords('g2'))
-		new Piece(Color.WHITE, PieceType.PAWN, ...Coords('h2'))
-		
-		new Piece(Color.BLACK, PieceType.PAWN, ...Coords('a7'))
-		new Piece(Color.BLACK, PieceType.PAWN, ...Coords('b7'))
-		new Piece(Color.BLACK, PieceType.PAWN, ...Coords('c7'))
-		new Piece(Color.BLACK, PieceType.PAWN, ...Coords('d7'))
-		new Piece(Color.BLACK, PieceType.PAWN, ...Coords('e7'))
-		new Piece(Color.BLACK, PieceType.PAWN, ...Coords('f7'))
-		new Piece(Color.BLACK, PieceType.PAWN, ...Coords('g7'))
-		new Piece(Color.BLACK, PieceType.PAWN, ...Coords('h7'))
-		
-		new Piece(Color.BLACK, PieceType.ROOK, ...Coords('a8'))
-		new Piece(Color.BLACK, PieceType.KNIGHT, ...Coords('b8'))
-		new Piece(Color.BLACK, PieceType.BISHOP, ...Coords('c8'))
-		new Piece(Color.BLACK, PieceType.QUEEN, ...Coords('d8'))
-		new Piece(Color.BLACK, PieceType.KING, ...Coords('e8'))
-		new Piece(Color.BLACK, PieceType.BISHOP, ...Coords('f8'))
-		new Piece(Color.BLACK, PieceType.KNIGHT, ...Coords('g8'))
-		new Piece(Color.BLACK, PieceType.ROOK, ...Coords('h8'))
+				color = IsUpperCase(char) ? Color.WHITE : Color.BLACK
+
+				new Piece(color, type, rank, file)
+				file++
+			} else {
+				file -= -char
+			}
+		}
+		rank++
 	}
 }
 
@@ -316,13 +276,12 @@ const Coords = str =>  [str[1] - 1, ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'].ind
 const Notations = coords => `${['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'][coords[1]]}${coords[0] + 1}`
 
 const TakePiece = coords => {
-	const select_index = PIECES.indexOf(GetPiece(coords))
-	if(select_index < selected) { selected-- }
 	material_eval += Material[PIECES[select_index].type] * (PIECES[select_index].color ? 1 : -1)
-	PIECES = PIECES.filter((_, index) =>  index !== select_index)
+	delete PIECES[Notations(coords)]
 }
 
-const Move = coords => {
+const Move = notation => {
+	const coords = Coords(notation)
 	const move_check = CheckMove(coords)
 	const start = PIECES[selected].coords()
 	if(move_check[0]) {
@@ -342,21 +301,21 @@ const Move = coords => {
 		} else if(move_check[1].indexOf(Flags.QUEENSIDE_CASTLE) !== None) {
 			const rank = PIECES[selected].color ? 7 : 0
 			GetPiece([rank, 0]).file = 3
-			POSITIONS[Notations([rank, 3])] = GetPiece([rank, 0])
-			delete POSITIONS[Notations([rank, 0])]
+			PIECES[Notations([rank, 3])] = GetPiece([rank, 0])
+			delete PIECES[Notations([rank, 0])]
 		} else if(move_check[1].indexOf(Flags.CASTLE) !== None) {
 			const rank = PIECES[selected].color ? 7 : 0
 			GetPiece([rank, 7]).file = 5
-			POSITIONS[Notations([rank, 5])] = GetPiece([rank, 7])
-			delete POSITIONS[Notations([rank, 7])]
+			PIECES[Notations([rank, 5])] = GetPiece([rank, 7])
+			delete PIECES[Notations([rank, 7])]
 		}
-		POSITIONS[Notations(coords)] = PIECES[selected]
-		delete POSITIONS[Notations(PIECES[selected].coords())];
-		[PIECES[selected].rank, PIECES[selected].file] = coords
-		PIECES[selected].moved = true
-		moves.push(new MoveObj(PIECES[selected], start, coords))
-		console.log(`${PIECES[selected].toString()} from ${Notations(start)} (eval: ${material_eval})`)
-		if(IsCheck(1 - PIECES[selected].color)) { console.log(`Your opponent (${PIECES[selected].color ? 'white' : 'black'}) is check`) }
+		PIECES[notation] = PIECES[selected]
+		delete PIECES[Notations(PIECES[selected].coords())];
+		[PIECES[notation].rank, PIECES[notation].file] = coords
+		PIECES[notation].moved = true
+		moves.push(new MoveObj(PIECES[notation], start, coords))
+		console.log(`${PIECES[notation].toString()} from ${Notations(start)} (eval: ${material_eval})`)
+		if(IsCheck(1 - PIECES[notation].color)) { console.log(`Your opponent (${PIECES[notation].color ? 'white' : 'black'}) is check`) }
 		fen_history.push(FEN())
 		move_count++
 	} else {
@@ -364,11 +323,11 @@ const Move = coords => {
 	}
 }
 
-const Promote = (coords, type = PieceType.QUEEN) => {
+const Promote = (notation, type = PieceType.QUEEN) => {
+	const coords = Coords(notation)
 	if(JSON.stringify(coords) === JSON.stringify(promotion)) {
 		if(type === PieceType.KNIGHT || type === PieceType.BISHOP || type === PieceType.ROOK || type === PieceType.QUEEN) {
-			PIECES[PIECES.indexOf(GetPiece(coords))].type = type
-			POSITIONS[Notations(coords)].type = type
+			PIECES[notation].type = type
 		} else {
 			console.log('Invalid type')
 		}
@@ -381,7 +340,7 @@ const GetEveryColoredMove = color => {
 	const mvs = []
 	for(let i = 0; i < 8; i++) {
 		for(let j = 0; j < 8; j++) {
-			for(const piece of PIECES) {
+			for(const piece of Object.values(PIECES)) {
 				if(piece.color === color && CheckMove([i, j], piece)[0]) { mvs.push([piece.coords(), [i, j]]) }
 			}
 		}
@@ -401,14 +360,15 @@ class Piece {
 		this.type = type
 		this.rank = rank
 		this.file = file
-		PIECES.push(this)
-		POSITIONS[Notations(this.coords())] = this
+		PIECES[Notations(this.coords())] = this
 		if(type === PieceType.KING) { king_pos[color] = this.coords() }
 	}
 	
 	coords() { return [this.rank, this.file] }
 
 	toString() { return `${this.color ? 'Black' : 'White'} ${this.type === 0 ? 'pawn' : this.type === 1 ? 'knight' : this.type === 2 ? 'bishop' : this.type === 3 ? 'rook' : this.type === 4 ? 'queen' : 'king'} on ${Notations(this.coords())}` }
+
+	clone() { return Object.setPrototypeOf(structuredClone(this), this.__proto__) }
 }
 
 const PieceRepr = piece => {
@@ -588,7 +548,7 @@ const ThreefoldRepetition = () => {
 const InsufficientMaterial = () => {
 	let ncount = 0
 	let bcount = 0
-	for(const piece of PIECES) {
+	for(const piece of Object.values(PIECES)) {
 		switch(piece.type) {
 			case PieceType.PAWN:
 			case PieceType.ROOK:
@@ -636,7 +596,6 @@ module.exports = {
 		init: Board,
 		show: ShowBoard,
 		pieces: GetPieces,
-		positions: GetPositions,
 		status: GetStatus,
 		fen: FEN,
 	},
@@ -645,5 +604,4 @@ module.exports = {
 		move: Move,
 		promote: Promote,
 	},
-	Coords,
 }
