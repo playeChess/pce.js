@@ -369,14 +369,32 @@ const ShowBoard = () => {
 			const piece = GetPiece([i, j])
 			if(piece) {
 				type = PieceRepr(piece)
-			} else {
-				type = ' '
-			}
+			} else { type = ' ' }
 			str += type + ' '
 		}
 		console.log(str + '|')
 	}
 	console.log('#-----------------#')
+}
+
+const FEN = () => {
+	let fen = ''
+	for(let i = 0; i < 8; i++) {
+		let spaces = 0
+		for(let j = 0; j < 8; j++) {
+			const piece = GetPiece([i, j])
+			if(piece) {
+				if(spaces > 0) {
+					fen += `${spaces}`
+					spaces = 0
+				}
+				fen += PieceRepr(piece)
+			} else { spaces++ }
+		}
+		if(spaces > 0) { fen += spaces }
+		fen += i < 7 ? '/' : ''
+	}
+	return fen
 }
 
 const AddCoords = (...coords) => {
@@ -500,4 +518,5 @@ module.exports = {
 	ShowBoard,
 	Move,
 	GetStatus,
+	FEN,
 }

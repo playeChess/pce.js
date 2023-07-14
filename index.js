@@ -10,6 +10,7 @@ const {
 	ShowBoard,
 	Move,
 	GetStatus,
+	FEN,
 } = require('./pce.js')
 
 new Piece(Color.WHITE, PieceType.KING, ...Coords('e1'))
@@ -31,3 +32,4 @@ Move(Coords('g8'))
 ShowBoard()
 
 console.log(GetStatus())
+console.log(FEN())
