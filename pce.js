@@ -10,6 +10,8 @@ var material_eval = 0
 const moves = []
 var en_passant_offset = 0
 const king_pos = [[0, 4], [7, 4]]
+const fen_history = []
+var move_count = 0
 
 const Color = {
 	NONE: -1,
@@ -48,7 +50,10 @@ const Status = {
 	DEFAULT: 0,
 	CHECK: 1,
 	STALEMATE: 2,
-	CHECKMATE: 3,
+	THREEFOLD: 3,
+	INSUFFICIENT: 4,
+	FIFTY_MOVES: 5,
+	CHECKMATE: 6,
 }
 
 class MoveObj {
@@ -276,10 +281,13 @@ const Move = coords => {
 	const start = PIECES[selected].coords()
 	if(move_check[0]) {
 		if(PIECES[selected].type === PieceType.KING) { king_pos[PIECES[selected].color] = coords }
+		if(PIECES[selected].type === PieceType.PAWN) { move_count = -1 }
 		if(move_check[1].indexOf(Flags.CAPTURE) !== -1) {
 			TakePiece(coords)
+			move_count = -1
 		} else if(move_check[1].indexOf(Flags.EN_PASSANT) !== -1) {
 			TakePiece([coords[0] - 1, coords[1]])
+			move_count = -1
 		} else if(move_check[1].indexOf(Flags.QUEENSIDE_CASTLE) !== -1) {
 			const rank = PIECES[selected].color ? 7 : 0
 			GetPiece([rank, 0]).file = 3
@@ -298,6 +306,8 @@ const Move = coords => {
 		moves.push(new MoveObj(PIECES[selected], start, coords))
 		console.log(`${PIECES[selected].toString()} from ${Notations(start)} (eval: ${material_eval})`)
 		if(IsCheck(1 - PIECES[selected].color)) { console.log(`Your opponent (${PIECES[selected].color ? 'white' : 'black'}) is check`) }
+		fen_history.push(FEN())
+		move_count++
 	} else {
 		console.log(`ERROR: ${Notations(coords)} is an invalid move (${move_check[2]})`)
 	}
@@ -497,8 +507,51 @@ const IsCheck = (color, coords = undefined) => {
 	return false
 }
 
+const ThreefoldRepetition = () => {
+	const r = {}
+	for(const val of fen_history) {
+		if(r[val]) {
+			r[val]++
+		} else { r[val] = 1 }
+	}
+	return Object.values(r).reduce((mem, val) => {
+		if(val >= 3) {
+			return true
+		} else { return mem }
+	}, false)
+}
+
+const InsufficientMaterial = () => {
+	let ncount = 0
+	let bcount = 0
+	for(const piece of PIECES) {
+		switch(piece.type) {
+			case PieceType.PAWN, PieceType.ROOK, PieceType.QUEEN:
+				return false
+			case PieceType.KNIGHT:
+				ncount++
+				break
+			case PieceType.BISHOP:
+				bcount++
+				break
+			default:
+				break
+		}
+	}
+	return ncount + bcount < 2 || bcount === 0 && ncount === 2
+}
+
 const GetStatus = () => {
 	let status = [Status.DEFAULT, Color.NONE]
+	if(ThreefoldRepetition()) {
+		return [Status.THREEFOLD, Color.NONE]
+	}
+	if(move_count >= 50) {
+		return [Status.FIFTY_MOVES, Color.NONE]
+	}
+	if(InsufficientMaterial()) {
+		return [Status.INSUFFICIENT, Color.NONE]
+	}
 	for(const color of [Color.WHITE, Color.BLACK]) {
 		if(IsCheck(color)) {
 			status = [Status.CHECK, color]

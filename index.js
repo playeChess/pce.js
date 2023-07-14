@@ -14,23 +14,27 @@ const {
 } = require('./pce.js')
 
 new Piece(Color.WHITE, PieceType.KING, ...Coords('e1'))
-new Piece(Color.WHITE, PieceType.ROOK, ...Coords('a1'))
-new Piece(Color.WHITE, PieceType.ROOK, ...Coords('f1'))
 new Piece(Color.BLACK, PieceType.KING, ...Coords('e8'))
-new Piece(Color.BLACK, PieceType.ROOK, ...Coords('h8'))
-new Piece(Color.BLACK, PieceType.ROOK, ...Coords('d8'))
 
 ShowBoard()
 
 SelectPiece(Coords('e1'))
-Move(Coords('c1'))
+Move(Coords('e2'))
 
 ShowBoard()
 
 SelectPiece(Coords('e8'))
-Move(Coords('g8'))
+Move(Coords('e7'))
 
 ShowBoard()
+
+SelectPiece(Coords('e2'))
+Move(Coords('e1'))
+
+ShowBoard()
+
+SelectPiece(Coords('e7'))
+Move(Coords('e8'))
 
 console.log(GetStatus())
 console.log(FEN())
