@@ -1,7 +1,4 @@
-const {
-	Board,
-	Piece,
-} = require('./pce.js')
+const { Board, Piece } = require('./pce.js')
 
 Board.init()
 
